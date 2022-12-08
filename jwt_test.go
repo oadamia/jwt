@@ -71,7 +71,21 @@ func TestUserJWT(t *testing.T) {
 		assert.Error(err)
 	})
 
-	t.Run("Parse User jwt with invalid claim", func(t *testing.T) {
+	t.Run("Parse User jwt with empty claim", func(t *testing.T) {
+		jwt.TimeFunc = func() time.Time {
+			return generatorTime
+		}
+
+		assert := assert.New(t)
+		claim, err := Parse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwibmFtZSI6IiIsInR5cGUiOiIiLCJleHAiOjE1Nzc4MzY4NjB9.woDc9P3mvnZJ_EZmbQMoMxg2C-GqUoCq8A5vREtiLe4")
+
+		assert.Equal("&{Id:0 Name: Type: RegisteredClaims:{Issuer: Subject: Audience:[] ExpiresAt:2020-01-01 04:01:00 +0400 +04 NotBefore:<nil> IssuedAt:<nil> ID:}}", fmt.Sprintf("%+v", claim))
+		assert.Nil(err)
+
+		jwt.TimeFunc = time.Now
+	})
+
+	t.Run("Parse User jwt with not custom claim", func(t *testing.T) {
 		jwt.TimeFunc = func() time.Time {
 			return generatorTime
 		}
