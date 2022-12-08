@@ -9,7 +9,6 @@ import (
 
 // package global variables
 var secret string
-var expiresAtFunc = expiresAt
 
 // Init Initialize JWT
 // JWT should be initialized in main,  before any JWT operation or behaviour will be undefined
@@ -17,7 +16,34 @@ func Init(s string) {
 	secret = s
 }
 
-// Generate JWT Token for user
+// Generate JWT Token for claim
+func Generate(c IClaim, d time.Duration) (string, error) {
+	claim := &CustomClaim{
+		Id:   c.GetID(),
+		Name: c.GetName(),
+		Type: c.GetType(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAtFunc(d)),
+		},
+	}
+	return generate(claim)
+}
+
+// Parse JWT Token with CustomClaim
+func Parse(tokenString string) (*CustomClaim, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaim{}, secretKeyFunc)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*CustomClaim)
+	if !ok {
+		return nil, errors.New("jwt token Claim is not CustomClaim")
+	}
+
+	return claims, nil
+}
+
 func generate(c jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	return token.SignedString([]byte(secret))
@@ -25,17 +51,4 @@ func generate(c jwt.Claims) (string, error) {
 
 func secretKeyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(secret), nil
-}
-
-// SetExpiresAtFunc set expiresAtFunc
-func SetExpiresAtFunc(expFunc func(d time.Duration) time.Time) error {
-	if expFunc == nil {
-		return errors.New("can not set nil as expires at function")
-	}
-	expiresAtFunc = expFunc
-	return nil
-}
-
-func expiresAt(d time.Duration) time.Time {
-	return time.Now().Add(d)
 }
