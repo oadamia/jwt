@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -36,11 +35,7 @@ func Parse(tokenString string) (*CustomClaim, error) {
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*CustomClaim)
-	if !ok {
-		return nil, errors.New("jwt token Claim is not CustomClaim")
-	}
-
+	claims, _ := token.Claims.(*CustomClaim)
 	return claims, nil
 }
 

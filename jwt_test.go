@@ -13,7 +13,6 @@ import (
 
 func TestMain(m *testing.M) {
 	Init("jwt")
-	SetExpiresAtFunc(mock.ExpiresAt)
 
 	os.Exit(m.Run())
 }
@@ -27,6 +26,16 @@ func TestGenerate(t *testing.T) {
 		Type: "user",
 	}
 
+	t.Run("Generate Real", func(t *testing.T) {
+
+		assert := assert.New(t)
+		_, err := Generate(claim, duration)
+
+		assert.NoError(err)
+	})
+
+	SetExpiresAtFunc(mock.ExpiresAt)
+
 	t.Run("Generate", func(t *testing.T) {
 
 		assert := assert.New(t)
@@ -35,6 +44,7 @@ func TestGenerate(t *testing.T) {
 		assert.Equal("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6InRlc3QiLCJ0eXBlIjoidXNlciIsImV4cCI6MTU3NzgzNjg2MH0._e6meYmJrnrUuA_yfO1yYrKWJR7Z0Yzw3C2jvOAtWRg", str)
 		assert.NoError(err)
 	})
+
 }
 
 func TestUserJWT(t *testing.T) {
@@ -85,18 +95,10 @@ func TestUserJWT(t *testing.T) {
 		jwt.TimeFunc = time.Now
 	})
 
-	t.Run("Parse User jwt with not custom claim", func(t *testing.T) {
-		jwt.TimeFunc = func() time.Time {
-			return generatorTime
-		}
-
+	t.Run("set nil as expiresAt funciton", func(t *testing.T) {
 		assert := assert.New(t)
-		claim, err := Parse("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwibmFtZSI6IiIsInR5cGUiOiIiLCJleHAiOjE1Nzc4MzY4NjB9.woDc9P3mvnZJ_EZmbQMoMxg2C-GqUoCq8A5vREtiLe4")
-
-		assert.Equal("&{Id:0 Name: Type: RegisteredClaims:{Issuer: Subject: Audience:[] ExpiresAt:2020-01-01 04:01:00 +0400 +04 NotBefore:<nil> IssuedAt:<nil> ID:}}", fmt.Sprintf("%+v", claim))
-		assert.Nil(err)
-
-		jwt.TimeFunc = time.Now
+		err := SetExpiresAtFunc(nil)
+		assert.Error(err)
 	})
 
 }
