@@ -1,6 +1,8 @@
 package mock
 
-import "time"
+import (
+	"time"
+)
 
 type Claim struct {
 	ID   int
@@ -21,6 +23,6 @@ func (c Claim) GetType() string {
 }
 
 func ExpiresAt(d time.Duration) time.Time {
-	t, _ := time.Parse(time.RFC3339, "2020-00-00T00:30:00Z")
+	t, _ := time.Parse(time.RFC3339, "2020-01-01T00:01:00Z")
 	return t
 }
